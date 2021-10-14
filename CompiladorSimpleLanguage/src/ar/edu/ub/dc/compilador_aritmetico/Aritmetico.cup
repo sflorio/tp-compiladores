@@ -1,0 +1,50 @@
+package ar.edu.ub.dc.compilador_aritmetico;
+
+import java_cup.runtime.*;
+
+
+/* Terminales sin atributo */
+terminal INICIO, FIN;
+terminal PUNTOYCOMA, MAS, MENOS, POR, DIVISION, MODULO;
+terminal LPAREN, RPAREN;
+
+
+/* Terminales con atributo asociado */
+terminal Integer NUMERO;
+
+/* No terminales sin atributo */
+non terminal stmt_list;
+
+/* No terminales con atributo asociado */
+non terminal Integer expression;
+
+/* Precedencias */
+precedence left MAS, MENOS;
+precedence left POR, DIVISION, MODULO;
+
+/* Gramática */
+stmt_list ::= stmt_list expression:e PUNTOYCOMA 
+			   {: System.out.println("= " + e); :}
+
+			| stmt_list error PUNTOYCOMA
+			| /* Lambda */
+			;
+stmt ::= var ASIGNACION expression;
+
+var ::=  A | B | C;
+
+expression ::= expression:e1 MAS expression:e2
+		{: RESULT = new Integer(e1.intValue() + e2.intValue()); :}
+		| expression:e1 MENOS expression:e2
+		{: RESULT = new Integer(e1.intValue() - e2.intValue()); :}
+		| expression:e1 POR expression:e2
+		{: RESULT = new Integer(e1.intValue() * e2.intValue()); :}
+		| expression:e1 DIVISION expression:e2
+		{: RESULT = new Integer(e1.intValue() / e2.intValue()); :}
+		| expression:e1 MODULO expression:e2
+		{: RESULT = new Integer(e1.intValue() % e2.intValue()); :}
+		| NUMERO:n
+		{: RESULT = n; :}
+		| LPAREN expression:e RPAREN
+		{: RESULT = e; :}
+		;
