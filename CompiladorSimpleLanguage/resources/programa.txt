@@ -1,1 +1,7 @@
-2+3;
+begin 
+	3 + 4;
+Asd = 1 + 1;
+Brc = Asd; 
+print Brc;
+
+end
