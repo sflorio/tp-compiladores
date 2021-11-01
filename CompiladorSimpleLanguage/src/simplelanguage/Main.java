@@ -1,11 +1,6 @@
 package simplelanguage;
 
 import java.io.FileReader;
-import java.util.HashMap;
-
-import java_cup.action_production;
-
-
 
 public class Main {
 	
