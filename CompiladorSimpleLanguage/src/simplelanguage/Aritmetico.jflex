@@ -1,4 +1,4 @@
-package ar.edu.ub.dc.compilador_aritmetico;
+package simplelanguage;
 
 import java_cup.runtime.Symbol;
 import java.lang.Character;
