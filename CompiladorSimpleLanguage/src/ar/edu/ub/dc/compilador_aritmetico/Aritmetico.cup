@@ -9,7 +9,6 @@ action code {:
 	
 	public static HashMap<String, Object> hm = new HashMap<>();
 	
-	
 	public static void Put(String identifier, Object value) {
 		hm.put(identifier, value);
 	}
@@ -28,14 +27,17 @@ action code {:
 /* Terminales sin atributo */
 terminal INICIO, FIN;
 terminal PUNTOYCOMA, MAS, MENOS, POR, DIVISION, MODULO, ASIGNACION, IDENTIFIER, IMPRIMIR;
+terminal IF, THEN, ELSE, FOR, IGUALDAD, DESIGUALDAD;
 terminal LPAREN, RPAREN;
+terminal L_LLAVE, R_LLAVE;
+
 
 
 /* Terminales con atributo asociado */
 terminal Integer NUMERO;
 
 /* No terminales sin atributo */
-non terminal program, stmt_list, stmt;
+non terminal program, stmt_list, stmt, assign_stmt, if_stmt, for_stmt, print_stmt, bool_expr;
 
 /* No terminales con atributo asociado */
 non terminal Integer expression;
@@ -53,26 +55,56 @@ program ::= INICIO stmt_list FIN;
 
 stmt_list ::= stmt_list stmt PUNTOYCOMA
 			| stmt_list error PUNTOYCOMA
-			|
+			| /* Empty*/
 			;
 			
-stmt ::= IDENTIFIER:v
-				{: RESULT = Get((String)v); :}
-			| IDENTIFIER:v ASIGNACION expression:e  
-				{:  Put((String)v, e); :}
-			| IDENTIFIER:v1 ASIGNACION IDENTIFIER:v2 
-				{:
-					Put((String)v1, Get((String)v2));					
-				:}				
-			| expression:e
-			| IMPRIMIR IDENTIFIER:v
-			{:
-				System.out.println(Get((String)v));
-			:}
-			|
+stmt ::=  assign_stmt:a
+		| print_stmt			
+		| expression:e
+		| bool_expr:b
+		| if_stmt:i
+		| for_stmt:f
+		| /* Empty*/
 ;
 
+assign_stmt ::= IDENTIFIER:v ASIGNACION expression:e
+				{: Put((String)v, e); :};
 
+print_stmt ::=    IMPRIMIR LPAREN expression:e RPAREN {: System.out.println(Integer.toString(e)); :}
+				| IMPRIMIR LPAREN bool_expr:e RPAREN {: System.out.println((Boolean)e ? "True" :"False" ); :}
+		;
+
+
+if_stmt ::= IF LPAREN bool_expr:c RPAREN THEN L_LLAVE stmt_list:s R_LLAVE
+			{: if((Boolean)c){ RESULT = s; } :}
+			
+			| IF LPAREN bool_expr:c RPAREN THEN L_LLAVE stmt_list:s1 R_LLAVE ELSE L_LLAVE stmt_list:s2 R_LLAVE
+			{: if((Boolean)c){ RESULT = s1; } else { RESULT = s2; } :}
+            ;
+
+/*terminar*/            
+for_stmt ::= FOR LPAREN expression:e RPAREN L_LLAVE stmt_list:s R_LLAVE
+				{:
+				Integer length = e.intValue();
+				
+				for( Integer i = 0; i < length; i++)
+				{
+					RESULT = s;
+				};
+				 
+				:}
+ ;
+
+
+
+
+bool_expr ::=  expression:s1 IGUALDAD expression:s2
+				{: RESULT = ( s1 == s2);  :}
+			  | expression:s1 DESIGUALDAD expression:s2 
+			  	{: RESULT = ( s1 != s2); :}
+			  /*| expression:s1 
+			  	{: RESULT = ( s1 ); :}*/
+			  ;
 		
 expression ::= expression:e1 MAS expression:e2
 		{: RESULT = new Integer(e1.intValue() + e2.intValue()); :}
@@ -86,6 +118,8 @@ expression ::= expression:e1 MAS expression:e2
 		{: RESULT = new Integer(e1.intValue() % e2.intValue()); :}
 		| NUMERO:n
 		{: RESULT = n; :}
+		| IDENTIFIER:v
+		{: RESULT = (Integer)Get((String)v); :}
 		| LPAREN expression:e RPAREN
 		{: RESULT = e; :}
 		;
