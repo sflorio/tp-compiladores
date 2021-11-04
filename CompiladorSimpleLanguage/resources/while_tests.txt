@@ -1,0 +1,15 @@
+begin
+
+loop(3){ print(1); };
+
+Asd = 1;
+
+loop(3){ Asd++; };
+
+print(Asd);
+
+loop(2){ Asd+=5; };
+
+print(Asd);
+
+end

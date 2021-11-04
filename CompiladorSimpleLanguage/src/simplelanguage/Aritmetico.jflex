@@ -21,6 +21,7 @@ Identifier = [ABC][:jletterdigit:]*
 
 %%
 "+" { return new Symbol(sym.MAS); }
+"++" { return new Symbol(sym.PlUSONEACCUMULATOR); }
 "-" { return new Symbol(sym.MENOS); }
 "*" { return new Symbol(sym.POR); }
 "/" { return new Symbol(sym.DIVISION); }
@@ -33,13 +34,14 @@ Identifier = [ABC][:jletterdigit:]*
 "begin" { return new Symbol(sym.INICIO); }
 "end" { return new Symbol(sym.FIN); }
 "=" { return new Symbol(sym.ASIGNACION); }
+"+=" { return new Symbol(sym.ACCUMULATOR); }
 "==" { return new Symbol(sym.IGUALDAD); }
 "!=" { return new Symbol(sym.DESIGUALDAD); }
 "print" { return new Symbol(sym.IMPRIMIR); }
 "if" { return new Symbol(sym.IF); }
 "then" { return new Symbol(sym.THEN); }
 "else" { return new Symbol(sym.ELSE); }
-"for" { return new Symbol(sym.FOR); }
+"loop" { return new Symbol(sym.LOOP); }
 
 {Identifier} { return new Symbol(sym.IDENTIFIER, yytext());}
 [:digit:]+ { return new Symbol(sym.NUMERO, new Integer(yytext())); }

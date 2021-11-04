@@ -3,41 +3,24 @@ import java.io.*;
 import java.util.*;
 import java_cup.runtime.*;
 import java.util.HashMap;
+import simplelanguage.code;
+import java_cup.runtime.ComplexSymbolFactory.ComplexSymbol;
 
-
-action code {:
-	
-	public static HashMap<String, Object> hm = new HashMap<>();
-	
-	public static void Put(String identifier, Object value) {
-		hm.put(identifier, value);
-	}
-			   			   
-	public static Object Get(String identifier) {
-		return hm.get(identifier);
-	}
-   
-	public static void Show(String value) {
-		System.out.println("Resultado: " +  value);
-		System.out.println("Fin de ejecucion.");
-	}
-	
-:};
 
 /* Terminales sin atributo */
 terminal INICIO, FIN;
-terminal PUNTOYCOMA, MAS, MENOS, POR, DIVISION, MODULO, ASIGNACION, IDENTIFIER, IMPRIMIR;
-terminal IF, THEN, ELSE, FOR, IGUALDAD, DESIGUALDAD;
+terminal PUNTOYCOMA, MAS, MENOS, POR, DIVISION, MODULO,ACCUMULATOR, PlUSONEACCUMULATOR, ASIGNACION, IDENTIFIER, IMPRIMIR;
+terminal IF, THEN, ELSE, LOOP, IGUALDAD, DESIGUALDAD;
 terminal LPAREN, RPAREN;
 terminal L_LLAVE, R_LLAVE;
-
 
 
 /* Terminales con atributo asociado */
 terminal Integer NUMERO;
 
 /* No terminales sin atributo */
-non terminal program, stmt_list, stmt, assign_stmt, if_stmt, for_stmt, print_stmt, bool_expr;
+
+non terminal program, stmt, stmt_list, assign_stmt, if_stmt, loop_stmt, print_stmt, bool_expr;
 
 /* No terminales con atributo asociado */
 non terminal Integer expression;
@@ -53,25 +36,25 @@ start with program;
 
 program ::= INICIO stmt_list FIN;
 
-stmt_list ::= stmt_list stmt PUNTOYCOMA
-			| stmt_list error PUNTOYCOMA
+stmt_list ::= stmt_list:sl stmt:s PUNTOYCOMA
+			/*| stmt_list:sl error:e PUNTOYCOMA*/
 			| /* Empty*/
 			;
 			
 stmt ::=  assign_stmt:a
-		| print_stmt			
+		| print_stmt:p			
 		| expression:e
 		| bool_expr:b
 		| if_stmt:i
-		| for_stmt:f
+		| loop_stmt:w
 		| /* Empty*/
 ;
 
 assign_stmt ::= IDENTIFIER:v ASIGNACION expression:e
-				{: Put((String)v, e); :};
+				{: code.Put((String)v, e); RESULT = v; :};
 
-print_stmt ::=    IMPRIMIR LPAREN expression:e RPAREN {: System.out.println(Integer.toString(e)); :}
-				| IMPRIMIR LPAREN bool_expr:e RPAREN {: System.out.println((Boolean)e ? "True" :"False" ); :}
+print_stmt ::=    IMPRIMIR LPAREN expression:e RPAREN {: System.out.println(Integer.toString(e)); RESULT = e; :}
+				| IMPRIMIR LPAREN bool_expr:e RPAREN {: System.out.println(code.GetBoolString(e)); RESULT = e; :}
 		;
 
 
@@ -83,19 +66,35 @@ if_stmt ::= IF LPAREN bool_expr:c RPAREN THEN L_LLAVE stmt_list:s R_LLAVE
             ;
 
 /*terminar*/            
-for_stmt ::= FOR LPAREN expression:e RPAREN L_LLAVE stmt_list:s R_LLAVE
-				{:
-				Integer length = e.intValue();
-				
-				for( Integer i = 0; i < length; i++)
-				{
-					RESULT = s;
-				};
-				 
+loop_stmt ::=  
+				LOOP LPAREN expression:e RPAREN L_LLAVE IDENTIFIER:v ACCUMULATOR expression:e1 PUNTOYCOMA R_LLAVE
+				{:					
+					Integer variableValue= (Integer)code.GetIntValue(v);
+					for( Integer i = 0; i < e.intValue(); i++)
+					{
+						variableValue = variableValue +e1;
+					}
+					code.Put((String)v, variableValue);					
+					RESULT = code.Get(v);				
 				:}
- ;
-
-
+				|
+				LOOP LPAREN expression:e RPAREN L_LLAVE IDENTIFIER:v PlUSONEACCUMULATOR PUNTOYCOMA R_LLAVE
+				{:	
+					for( Integer i = 0; i < e.intValue(); i++)
+					{
+						Integer variableValue = code.GetIntValue(v);					
+						code.Put(v, variableValue + 1 );
+					}
+					RESULT = code.Get(v);				
+				:}
+				|
+				LOOP LPAREN expression:e RPAREN L_LLAVE print_stmt:s PUNTOYCOMA R_LLAVE
+				{:
+					for( Integer i = 0; i < e.intValue(); i++){
+						System.out.println(String.valueOf(s));
+					}											 
+				:}
+ 				;
 
 
 bool_expr ::=  expression:s1 IGUALDAD expression:s2
@@ -119,7 +118,18 @@ expression ::= expression:e1 MAS expression:e2
 		| NUMERO:n
 		{: RESULT = n; :}
 		| IDENTIFIER:v
-		{: RESULT = (Integer)Get((String)v); :}
+		{: RESULT = code.GetIntValue(v); :}
+		| IDENTIFIER:v PlUSONEACCUMULATOR
+		{: 
+			code.Put((String)v, code.GetIntValue(v) + 1); 
+			RESULT = code.GetIntValue(v); 
+		:}		
+		| IDENTIFIER:v ACCUMULATOR expression:e1
+		{: 
+			Integer variableValue= (Integer)code.GetIntValue(v);
+			code.Put((String)v, variableValue + e1); 
+			RESULT = code.GetIntValue(v);
+		:}		
 		| LPAREN expression:e RPAREN
 		{: RESULT = e; :}
 		;

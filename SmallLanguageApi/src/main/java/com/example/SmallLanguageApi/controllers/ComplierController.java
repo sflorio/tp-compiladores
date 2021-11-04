@@ -1,6 +1,5 @@
 package com.example.SmallLanguageApi.controllers;
 
-import java.io.FileReader;
 import java.io.StringReader;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,14 +16,14 @@ import simplelanguage.Scanner;
 public class ComplierController {
     
 
-    @PostMapping("/Compilar")
+    @PostMapping("/compilar")
     public String Compilar(@RequestBody CompilerRequest request) throws Exception{
     	/*new StringReader(request.Codigo)*/
-    	var result =new Parser(new Scanner(new StringReader(request.Codigo))).parse();
-    	return result.toString();
+    	new Parser(new Scanner(new StringReader(request.Codigo))).parse();
+    	return "aaa";
     }
 
-    @PostMapping("/Correr")
+    @PostMapping("/correr")
     public String Correr(@RequestBody CompilerRequest request) throws Exception{
     	try {
     		var result = new Parser(new Scanner(new StringReader(request.Codigo))).parse();
